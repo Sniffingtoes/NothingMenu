@@ -5,6 +5,7 @@ just a fun project
 
 <img width="562" height="778" alt="image" src="https://github.com/user-attachments/assets/af08121d-f247-41e3-bf97-b318fc12a9ac" />
 
+
 # 💾 installation
 - Download gorilla tag if not already
 - Get the latest from [Here](https://github.com/Sniffingtoes/NothingMenu/releases/latest)
