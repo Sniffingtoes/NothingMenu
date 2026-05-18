@@ -1,11 +1,7 @@
 using BepInEx;
-
 using Nothing.Classes;
-
 using System.Collections.Generic;
-
 using TMPro;
-
 using UnityEngine;
 using UnityEngine.UI;
 

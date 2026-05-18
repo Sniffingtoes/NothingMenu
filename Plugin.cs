@@ -1,11 +1,8 @@
 using BepInEx;
-
 using UnityEngine;
-
 using Nothing.Menu;
 using Nothing.Notifications;
-
-using NothingMenu.Menu;
+using NothingMenu.Utils;
 
 namespace Nothing
 {

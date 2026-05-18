@@ -55,16 +55,31 @@ namespace Nothing.Classes
 
         private IEnumerator PlaySoundSafe(int index)
         {
+            if (clickSounds.Count == 0 && !isLoaded && !isCurrentlyLoading)
+            {
+                yield return LoadAllSoundsRoutine();
+            }
+
             while (!isLoaded && isCurrentlyLoading)
             {
                 yield return null;
             }
 
-            if (clickSounds.TryGetValue(index, out AudioClip clip))
+            int normalizedIndex = Settings.NormalizeClickSoundIndex(index);
+            if (!clickSounds.TryGetValue(normalizedIndex, out AudioClip clip))
+            {
+                clickSounds.TryGetValue(1, out clip);
+            }
+
+            if (clip != null)
             {
                 if (audioPlayer == null) CreateAudioSource();
                 audioPlayer.Stop();
                 audioPlayer.PlayOneShot(clip);
+            }
+            else
+            {
+                Debug.LogWarning($"Click sound missing. Requested index={normalizedIndex}, loaded clips={clickSounds.Count}");
             }
         }
 

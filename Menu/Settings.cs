@@ -22,17 +22,20 @@ namespace Nothing
 
         public static int currentClickIndex = 1;
 
+        public static int NormalizeClickSoundIndex(int index)
+        {
+            const int min = 1;
+            const int max = 5;
+            if (index < min) return min;
+            if (index > max) return max;
+            return index;
+        }
+
         public static string GetClickSound()
         {
+            currentClickIndex = NormalizeClickSoundIndex(currentClickIndex);
             return currentClickIndex.ToString();
         }
-
-        public static void CycleClickSound()
-        {
-            currentClickIndex++;
-            if (currentClickIndex > 5) currentClickIndex = 1;
-        }
-
 
         public static void RightHand()
         {

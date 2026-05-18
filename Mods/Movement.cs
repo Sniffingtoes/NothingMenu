@@ -1,22 +1,13 @@
 using BepInEx;
-
 using Custom.Inputs;
-
-using g3;
-
 using GorillaLocomotion;
 using GorillaLocomotion.Swimming;
-
 using Nothing.Menu;
-
 using Oculus.Platform;
-
 using Photon.Pun;
-
 using System;
 using System.Collections.Generic;
 using System.Text;
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -91,7 +82,7 @@ namespace Nothing.Mods
 
         public static void GripSpeedBoost()
         {
-            if (Get.rGripFloat && Get.lGripFloat)
+            if (Get.rGripFloat || Get.lGripFloat)
             {
                 SpeedBoost();
             }
@@ -265,7 +256,7 @@ namespace Nothing.Mods
         public static void WASD()
         {
             GorillaTagger.Instance.rigidbody.useGravity = false;
-            GorillaTagger.Instance.rigidbody.velocity = Vector3.zero;
+            GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
 
             float currentSpeed = Movement.FlySpeed * Time.deltaTime;
 
@@ -322,7 +313,7 @@ namespace Nothing.Mods
                 if (canTeleport && nray.collider != null)
                 {
                     Rigidbody rb = GorillaTagger.Instance.GetComponent<Rigidbody>();
-                    rb.velocity = Vector3.zero;
+                    rb.linearVelocity = Vector3.zero;
                     rb.angularVelocity = Vector3.zero;
                     Vector3 destination = nray.point + (nray.normal * 0.1f);
                     GorillaTagger.Instance.transform.position = destination;

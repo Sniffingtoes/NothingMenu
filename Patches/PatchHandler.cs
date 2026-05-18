@@ -31,7 +31,7 @@ namespace Nothing.Patches
                         {
                             MethodBase resolved = null;
                             try { resolved = targetMethod.Invoke(null, null) as MethodBase; }
-                            catch { /* ignore resolution errors */ }
+                            catch { }
 
                             if (resolved == null)
                             {

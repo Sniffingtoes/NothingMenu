@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using Nothing;
 using Nothing.Menu;
 using Nothing.Notifications;

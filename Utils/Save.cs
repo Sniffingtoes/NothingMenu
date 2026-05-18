@@ -1,7 +1,5 @@
 using Nothing.Mods;
-
 using Oculus.Interaction;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -97,7 +95,7 @@ namespace Nothing.Menu
                 if (data == null) return;
 
                 ThemeManager.currentThemeIndex = data.SelectedThemeIndex;
-                Settings.currentClickIndex = data.SelectedClickIndex;
+                Settings.currentClickIndex = Settings.NormalizeClickSoundIndex(data.SelectedClickIndex);
                 FlySettings.index = data.SelectedFlySpeedIndex;
                 BoostSettings.index = data.SelectedBoostIndex;
                 AntiReportSettings.index = data.SelectedAntiReportIndex;
@@ -132,13 +130,7 @@ namespace Nothing.Menu
                     }
                 }
 
-                Buttons.buttons.SelectMany(g => g).ToList().ForEach(b =>
-                {
-                    if (b.buttonText.Contains("Theme [")) b.buttonText = "Theme [" + ThemeManager.GetCurrentThemeName() + "]";
-                    if (b.buttonText.Contains("Fly Speed [")) b.buttonText = "Fly Speed [" + FlySettings.labels[FlySettings.index] + "]";
-                    if (b.buttonText.Contains("Click Sound [")) b.buttonText = "Click Sound [" + Settings.GetClickSound() + "]";
-                    if (b.buttonText.Contains("Speed Boost [")) b.buttonText = "Speed Boost [" + BoostSettings.labels[BoostSettings.index] + "]";
-                });
+                Buttons.RefreshValueChangerLabels();
 
                 ThemeManager.ApplyActiveTheme();
                 EnabledMods.RefreshEnabledTab();

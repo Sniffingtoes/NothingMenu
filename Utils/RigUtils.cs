@@ -1,15 +1,11 @@
 using Photon.Pun;
 using Photon.Realtime;
-
 using PlayFab;
 using PlayFab.ClientModels;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using UnityEngine;
-
 using Random = UnityEngine.Random;
 
 namespace Nothing.Utils

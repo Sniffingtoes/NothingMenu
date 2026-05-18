@@ -1,27 +1,21 @@
 using BepInEx;
-
 using Nothing.Classes;
 using Nothing.Notifications;
-
 using GorillaLocomotion;
-
 using HarmonyLib;
-
 using Photon.Pun;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-
 using TMPro;
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using Custom.Inputs;
 
 using static Nothing.Menu.Buttons;
 using static Nothing.Settings;
@@ -29,7 +23,7 @@ using static Nothing.Settings;
 namespace Nothing.Menu
 {
     [HarmonyPatch(typeof(GTPlayer), "LateUpdate")]
-    public class Main : MonoBehaviour
+    public partial class Main : MonoBehaviour
     {
         public static bool hasLoadedSave = false;
         public static bool menuPinned = false;
@@ -226,12 +220,12 @@ namespace Nothing.Menu
                     if (lq != null && !ButtonMatchesSearch(button, lq)) continue;
                     if (lq != null && !invokedSearchButtons.Add(button.buttonText)) continue;
                     try { button.method.Invoke(); }
-                    catch (Exception exc) { Debug.LogError($"{PluginInfo.Name} // Error with mod {button.buttonText} at {exc.StackTrace}: {exc.Message}"); }
+                    catch (Exception exc) { Debug.LogError($"{PluginInfo.Name} - Error with mod {button.buttonText} at {exc.StackTrace}: {exc.Message}"); }
                 }
             }
             catch (Exception exc)
             {
-                Debug.LogError($"{PluginInfo.Name} // Error executing mods: {exc.Message}");
+                Debug.LogError($"{PluginInfo.Name} - Error executing mods: {exc.Message}");
             }
 
             if (searchActive && pcSearchMode)
@@ -384,7 +378,7 @@ namespace Nothing.Menu
                 allTexts.Add(tmp);
             }
 
-            CreateMenuText(PluginInfo.Name + " V1.2", new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
+            CreateMenuText(PluginInfo.Name + " V1.3", new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
 
             if (fpsCounter)
             {
@@ -613,9 +607,9 @@ namespace Nothing.Menu
             GameObject prevBtnObj = new GameObject("PrevButton");
             prevBtnObj.transform.parent = menu.transform;
             prevBtnObj.transform.rotation = Quaternion.identity;
-            prevBtnObj.transform.localPosition = new Vector3(0.56f, 0.21f, -0.32f);
+            prevBtnObj.transform.localPosition = new Vector3(0.56f, 0.2f, -0.32f);
 
-            float pWidth = 0.05f;
+            float pWidth = 0.055f;
             float pHeight = 0.04f;
             float pThick = 0.005f;
             float pRad = 0.012f;
@@ -660,14 +654,14 @@ namespace Nothing.Menu
             prevBtnObj.AddComponent<Classes.Button>().relatedText = "PreviousPage";
             allButtons.Add(prevBtnObj);
 
-            CreateMenuText("<", new Vector3(0f, 0.065f, -0.12f), new Vector2(4f, 3f), 3f);
+            CreateMenuText("<", new Vector3(0f, 0.06f, -0.123f), new Vector2(4f, 3f), 3f);
 
             GameObject nextBtnObj = new GameObject("NextButton");
             nextBtnObj.transform.parent = menu.transform;
             nextBtnObj.transform.rotation = Quaternion.identity;
-            nextBtnObj.transform.localPosition = new Vector3(0.56f, -0.21f, -0.32f);
+            nextBtnObj.transform.localPosition = new Vector3(0.56f, -0.2f, -0.32f);
 
-            float nWidth = 0.05f;
+            float nWidth = 0.055f;
             float nHeight = 0.04f;
             float nThick = 0.005f;
             float nRad = 0.012f;
@@ -712,7 +706,7 @@ namespace Nothing.Menu
             nextBtnObj.AddComponent<Classes.Button>().relatedText = "NextPage";
             allButtons.Add(nextBtnObj);
 
-            CreateMenuText(">", new Vector3(0f, -0.065f, -0.12f), new Vector2(4f, 3f), 3f);
+            CreateMenuText(">", new Vector3(0f, -0.06f, -0.123f), new Vector2(4f, 3f), 3f);
 
             GameObject homeBtn = new GameObject("HomeButton");
             homeBtn.transform.parent = menu.transform;
@@ -763,7 +757,7 @@ namespace Nothing.Menu
             homeBtn.AddComponent<Classes.Button>().relatedText = "HomeButton";
             allButtons.Add(homeBtn);
 
-            CreateMenuText("Home", new Vector3(0f, 0f, -0.12f), new Vector2(8f, 3f), 2f);
+            CreateMenuText("Home", new Vector3(0f, 0f, -0.122f), new Vector2(8f, 3f), 2f);
 
             CreateVisibleButtons(motdFont);
         }
@@ -1005,8 +999,10 @@ namespace Nothing.Menu
             buttonContainer.transform.rotation = Quaternion.identity;
             buttonContainer.transform.localPosition = new Vector3(0.56f, 0f, 0.2f - offset);
 
-            float totalWidth = 0.17f;
-            float totalHeight = 0.035f;
+            bool isValueChanger = IsValueChanger(method.buttonText);
+
+            float totalWidth = isValueChanger ? 0.1f : 0.175f;
+            float totalHeight = isValueChanger ? 0.035f : 0.035f;
             float thickness = 0.005f;
             float radius = 0.01f;
 
@@ -1046,13 +1042,16 @@ namespace Nothing.Menu
                 buttonContainer.layer = 2;
             }
 
-            BoxCollider trigger = buttonContainer.AddComponent<BoxCollider>();
-            trigger.isTrigger = true;
-            trigger.size = new Vector3(thickness * 4f, totalWidth, totalHeight);
-            trigger.center = Vector3.zero;
+            if (!isValueChanger)
+            {
+                BoxCollider trigger = buttonContainer.AddComponent<BoxCollider>();
+                trigger.isTrigger = true;
+                trigger.size = new Vector3(thickness * 4f, totalWidth, totalHeight);
+                trigger.center = Vector3.zero;
 
-            buttonContainer.AddComponent<Classes.Button>().relatedText = method.buttonText;
-            allButtons.Add(buttonContainer);
+                buttonContainer.AddComponent<Classes.Button>().relatedText = method.buttonText;
+                allButtons.Add(buttonContainer);
+            }
 
             GameObject txtObj = new GameObject("ButtonText");
             txtObj.transform.SetParent(buttonContainer.transform, false);
@@ -1071,6 +1070,89 @@ namespace Nothing.Menu
             rect.localPosition = new Vector3(0.006f, 0f, 0f);
             rect.localRotation = Quaternion.Euler(180f, 90f, 90f);
             rect.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+
+            if (isValueChanger)
+            {
+                tmp.textWrappingMode = TextWrappingModes.Normal;
+                tmp.overflowMode = TextOverflowModes.Overflow;
+                tmp.enableAutoSizing = true;
+                tmp.fontSizeMin = 1.15f;
+                tmp.fontSizeMax = 1.9f;
+                tmp.lineSpacing = -8f;
+                rect.sizeDelta = new Vector2(totalWidth * 13.5f, totalHeight * 24f);
+
+                void CreateValueSideButton(bool increment, float yOffset)
+                {
+                    string controlId = GetValueChangerControlId(method.buttonText, increment);
+                    if (controlId == null) return;
+
+                    GameObject sideButton = new GameObject(increment ? "ValuePlusButton" : "ValueMinusButton");
+                    sideButton.transform.parent = menu.transform;
+                    sideButton.transform.rotation = Quaternion.identity;
+                    sideButton.transform.localPosition = buttonContainer.transform.localPosition + new Vector3(0f, yOffset, 0f);
+
+                    float sideWidth = 0.035f;
+                    float sideHeight = 0.035f;
+                    float sideThickness = 0.005f;
+                    float sideRadius = 0.01f;
+
+                    void AddSidePart(PrimitiveType type, Vector3 pos, Vector3 scale, Quaternion rot)
+                    {
+                        GameObject part = GameObject.CreatePrimitive(type);
+                        UnityEngine.Object.Destroy(part.GetComponent<Rigidbody>());
+                        part.transform.parent = sideButton.transform;
+                        part.transform.localPosition = pos;
+                        part.transform.localScale = scale;
+                        part.transform.localRotation = rot;
+                        ApplyMenuMaterial(part.GetComponent<Renderer>(), themeButtonColor);
+                        UnityEngine.Object.Destroy(part.GetComponent<Collider>());
+                    }
+
+                    Vector3 sideCylScale = new Vector3(sideRadius * 2, sideThickness / 2.01f, sideRadius * 2);
+                    float sideXOff = (sideWidth / 2) - sideRadius;
+                    float sideZOff = (sideHeight / 2) - sideRadius;
+                    Quaternion sideCylRot = Quaternion.Euler(0, 0, 90);
+
+                    AddSidePart(PrimitiveType.Cylinder, new Vector3(0, sideXOff, sideZOff), sideCylScale, sideCylRot);
+                    AddSidePart(PrimitiveType.Cylinder, new Vector3(0, -sideXOff, sideZOff), sideCylScale, sideCylRot);
+                    AddSidePart(PrimitiveType.Cylinder, new Vector3(0, sideXOff, -sideZOff), sideCylScale, sideCylRot);
+                    AddSidePart(PrimitiveType.Cylinder, new Vector3(0, -sideXOff, -sideZOff), sideCylScale, sideCylRot);
+
+                    AddSidePart(PrimitiveType.Cube, Vector3.zero, new Vector3(sideThickness, sideWidth - (sideRadius * 2), sideHeight), Quaternion.identity);
+                    AddSidePart(PrimitiveType.Cube, new Vector3(0, sideXOff, 0), new Vector3(sideThickness, sideRadius * 2, sideHeight - (sideRadius * 2)), Quaternion.identity);
+                    AddSidePart(PrimitiveType.Cube, new Vector3(0, -sideXOff, 0), new Vector3(sideThickness, sideRadius * 2, sideHeight - (sideRadius * 2)), Quaternion.identity);
+
+                    if (!UnityInput.Current.GetKey(keyboardButton) && !searchActive)
+                        sideButton.layer = 2;
+
+                    BoxCollider sideTrigger = sideButton.AddComponent<BoxCollider>();
+                    sideTrigger.isTrigger = true;
+                    sideTrigger.size = new Vector3(sideThickness * 4f, sideWidth, sideHeight);
+                    sideTrigger.center = Vector3.zero;
+
+                    sideButton.AddComponent<Classes.Button>().relatedText = controlId;
+                    allButtons.Add(sideButton);
+
+                    GameObject sideTextObj = new GameObject("ValueSideText");
+                    sideTextObj.transform.SetParent(sideButton.transform, false);
+                    sideTextObj.layer = 0;
+                    TextMeshPro sideTmp = sideTextObj.AddComponent<TextMeshPro>();
+                    if (motdFont != null) sideTmp.font = motdFont;
+                    sideTmp.text = increment ? "+" : "-";
+                    sideTmp.fontSize = 3.5f;
+                    sideTmp.alignment = TextAlignmentOptions.Center;
+                    sideTmp.color = themeTextColor;
+
+                    RectTransform sideRect = sideTmp.GetComponent<RectTransform>();
+                    sideRect.sizeDelta = new Vector2(sideWidth * 20f, sideHeight * 20f);
+                    sideRect.localPosition = new Vector3(0.006f, 0f, 0f);
+                    sideRect.localRotation = Quaternion.Euler(180f, 90f, 90f);
+                    sideRect.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                }
+
+                CreateValueSideButton(true, -0.23f);
+                CreateValueSideButton(false, 0.23f);
+            }
         }
 
         public static void RecreateMenu()
@@ -1175,35 +1257,6 @@ namespace Nothing.Menu
             menu.transform.rotation = Quaternion.LookRotation(-flatForward, Vector3.up) * Quaternion.Euler(-90f, -90f, 0f);
         }
 
-        public static void CreateReference(bool isRightHanded)
-        {
-            reference = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            reference.transform.parent = isRightHanded ? GorillaTagger.Instance.leftHandTransform : GorillaTagger.Instance.rightHandTransform;
-            SetupReference(reference, out buttonCollider);
-        }
-
-        public static void CreateReference2(bool isRightHanded)
-        {
-            reference2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            reference2.transform.parent = isRightHanded ? GorillaTagger.Instance.rightHandTransform : GorillaTagger.Instance.leftHandTransform;
-            SetupReference(reference2, out buttonCollider2);
-        }
-
-        private static void SetupReference(GameObject obj, out SphereCollider collider)
-        {
-            obj.GetComponent<Renderer>().material.color = ThemeManager.GetColors().Background;
-            obj.transform.localPosition = new Vector3(0f, -0.1f, 0f);
-            obj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-
-            collider = obj.GetComponent<SphereCollider>();
-            collider.isTrigger = true;
-
-            if (obj.GetComponent<ColorChanger>() == null)
-            {
-                obj.AddComponent<ColorChanger>();
-            }
-        }
-
         public static void Toggle(string buttonText)
         {
             if (buttonText == "HomeButton")
@@ -1267,6 +1320,13 @@ namespace Nothing.Menu
                 return;
             }
 
+            if (TryHandleValueChangerControl(buttonText))
+            {
+                RecreateMenu();
+                if (menuPinned) PinMenuInFrontOfPlayer();
+                return;
+            }
+
             int resultCount = (searchActive && searchQuery.Length > 0) ? CountSearchResults() : buttons[currentCategory].Length;
             int lastPage = Math.Max(0, ((resultCount + buttonsPerPage - 1) / buttonsPerPage) - 1);
             if (buttonText == "PreviousPage")
@@ -1287,7 +1347,7 @@ namespace Nothing.Menu
             ButtonInfo target = GetIndex(buttonText);
             if (target != null)
             {
-                if (ControllerInputPoller.instance.leftGrab || ControllerInputPoller.instance.rightGrab)
+                if (Get.leftGrab && Get.rightGrab)
                 {
                     FavoriteMods.ToggleFavorite(target.buttonText);
 
@@ -1482,9 +1542,6 @@ namespace Nothing.Menu
         public static Camera TPC;
         public static Text fpsObject;
         public static TextMeshPro fpsText;
-
-        private static GameObject GunPointer;
-        private static LineRenderer GunLine;
 
         public static int pageNumber = 0;
         public static int _currentCategory;

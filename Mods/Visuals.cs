@@ -300,16 +300,16 @@ namespace NothingMenu.Mods
                         {
                         }
                         string text = (num < 45) ? "red" : ((num > 80) ? "green" : "orange");
-                        string text2 = (vrrig.OwningNetPlayer != null) ? vrrig.OwningNetPlayer.NickName : "Unknown";
-                        string text3 = (vrrig.Creator != null) ? vrrig.Creator.UserId : "N/A";
-                        bool flag4 = vrrig.Creator != null && vrrig.Creator.IsMasterClient;
+                        NetPlayer creator = vrrig.Creator;
+                        string text2 = creator != null ? creator.NickName : "Unknown";
+                        string text3 = creator != null ? creator.UserId : "N/A";
+                        bool flag4 = creator != null && creator.IsMasterClient;
                         bool flag5 = vrrig.mainSkin.material.name.Contains("lava");
-                        textMeshPro.text = string.Format("<b>{0}</b>\nID: {1}\nMaster: {2}\nTagged: {4}\nFPS: <color={5}>{6}</color>", new object[]
+                        textMeshPro.text = string.Format("<b>{0}</b>\nID: {1}\nMaster: {2}\nTagged: {3}\nFPS: <color={4}>{5}</color>", new object[]
                         {
                             text2,
                             text3,
                             flag4 ? "Yes" : "No",
-                            vrrig.Creator.ActorNumber,
                             flag5 ? "Yes" : "No",
                             text,
                             num

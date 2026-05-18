@@ -20,6 +20,12 @@ namespace Nothing.Menu
         public static bool isLooping = false;
         public static string SoundPath = Path.Combine(Directory.GetCurrentDirectory(), "NothingMenu", "Sounds");
 
+        private const string SoundLibApiUrl = "https://api.github.com/repos/Sniffingtoes/NothingMenu/contents/soundlib";
+        private const string SoundLibRawBase = "https://raw.githubusercontent.com/Sniffingtoes/NothingMenu/main/soundlib/";
+
+        private static bool libraryLoaded = false;
+        private static List<ButtonInfo> cachedLibraryButtons = null;
+
         private static SoundboardHandler Instance
         {
             get
@@ -37,26 +43,26 @@ namespace Nothing.Menu
         public static void RefreshSoundboardButtons()
         {
             if (!Directory.Exists(SoundPath))
-            {
                 Directory.CreateDirectory(SoundPath);
-            }
 
             List<ButtonInfo> soundButtons = new List<ButtonInfo>
             {
-            new ButtonInfo { buttonText = "Return to Main", method = () => Main.currentCategory = 0, isTogglable = false },
-            new ButtonInfo { buttonText = "Open Sounds Folder", method = () => OpenFolder(), isTogglable = false },
-            new ButtonInfo { buttonText = "Loop Sounds", method = () => { isLooping = !isLooping; }, isTogglable = true },
-            new ButtonInfo { buttonText = "Stop All Sounds", method = () => StopAllSounds(), isTogglable = false }
+                new ButtonInfo { buttonText = "Return to Main",     method = () => Main.currentCategory = 0,   isTogglable = false },
+                new ButtonInfo { buttonText = "Open Sounds Folder", method = () => OpenFolder(),                isTogglable = false },
+                new ButtonInfo { buttonText = "Sound Library",      method = () => OpenSoundLibrary(),          isTogglable = false },
+                new ButtonInfo { buttonText = "Loop Sounds",        method = () => { isLooping = !isLooping; }, isTogglable = true  },
+                new ButtonInfo { buttonText = "Stop All Sounds",    method = () => StopAllSounds(),             isTogglable = false }
             };
 
             string[] files = Directory.GetFiles(SoundPath, "*.mp3");
             foreach (string file in files)
             {
-                string fileName = Path.GetFileName(file);
+                string capturedFile = file;
+                string fileName = Path.GetFileName(capturedFile);
                 soundButtons.Add(new ButtonInfo
                 {
                     buttonText = fileName.Replace(".mp3", ""),
-                    method = () => { Play(file); },
+                    method = () => PlayLocal(capturedFile),
                     isTogglable = false
                 });
             }
@@ -75,15 +81,142 @@ namespace Nothing.Menu
             });
         }
 
-        public static void Play(string path)
+        public static void OpenSoundLibrary()
         {
-            StopAllSounds();
-            activeRoutine = Instance.StartCoroutine(PlayMP3(path));
+            if (libraryLoaded && cachedLibraryButtons != null)
+            {
+                Buttons.buttons[11] = cachedLibraryButtons.ToArray();
+                Main.currentCategory = 11;
+                return;
+            }
+
+            Buttons.buttons[11] = new ButtonInfo[]
+            {
+                new ButtonInfo
+                {
+                    buttonText = "Return to Soundboard",
+                    method = () => { Main.currentCategory = 8; RefreshSoundboardButtons(); },
+                    isTogglable = false
+                },
+                new ButtonInfo { buttonText = "Click to load", method = () => { }, isTogglable = false }
+            };
+            Main.currentCategory = 11;
+
+            Instance.StartCoroutine(FetchSoundLibrary());
         }
 
-        private static IEnumerator PlayMP3(string fullPath)
+        private static IEnumerator FetchSoundLibrary()
         {
-            Recorder voiceRecorder = Object.FindObjectOfType<Recorder>();
+            using (UnityWebRequest www = UnityWebRequest.Get(SoundLibApiUrl))
+            {
+                www.SetRequestHeader("User-Agent", "NothingMenu");
+                yield return www.SendWebRequest();
+
+                List<ButtonInfo> libButtons = new List<ButtonInfo>
+                {
+                    new ButtonInfo
+                    {
+                        buttonText = "Return to Soundboard",
+                        method = () => { Main.currentCategory = 8; RefreshSoundboardButtons(); },
+                        isTogglable = false
+                    }
+                };
+
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    string json = www.downloadHandler.text;
+                    List<string> mp3Names = ParseGitHubFileNames(json, ".mp3");
+
+                    if (mp3Names.Count == 0)
+                    {
+                        libButtons.Add(new ButtonInfo { buttonText = "No sounds found", method = () => { }, isTogglable = false });
+                    }
+                    else
+                    {
+                        foreach (string name in mp3Names)
+                        {
+                            string capturedName = name;
+                            string url = SoundLibRawBase + UnityWebRequest.EscapeURL(capturedName);
+                            libButtons.Add(new ButtonInfo
+                            {
+                                buttonText = capturedName.Replace(".mp3", ""),
+                                method = () => Instance.StartCoroutine(DownloadOnly(url, capturedName)),
+                                isTogglable = false
+                            });
+                        }
+                    }
+
+                    libraryLoaded = true;
+                    cachedLibraryButtons = libButtons;
+                }
+                else
+                {
+                    libButtons.Add(new ButtonInfo { buttonText = "Failed to load library", method = () => { }, isTogglable = false });
+                    libButtons.Add(new ButtonInfo { buttonText = "Retry", method = () => OpenSoundLibrary(), isTogglable = false });
+                }
+
+                Buttons.buttons[11] = libButtons.ToArray();
+                Main.currentCategory = 11;
+            }
+        }
+
+        private static IEnumerator DownloadOnly(string url, string fileName)
+        {
+            if (!Directory.Exists(SoundPath))
+                Directory.CreateDirectory(SoundPath);
+
+            string savePath = Path.Combine(SoundPath, fileName);
+
+            if (File.Exists(savePath))
+            {
+                PlayLocal(savePath);
+                yield break;
+            }
+
+            using (UnityWebRequest dl = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET))
+            {
+                dl.downloadHandler = new DownloadHandlerBuffer();
+                dl.SetRequestHeader("User-Agent", "NothingMenu");
+                dl.timeout = 0;
+
+                yield return dl.SendWebRequest();
+
+                if (dl.result != UnityWebRequest.Result.Success)
+                    yield break;
+
+                File.WriteAllBytes(savePath, dl.downloadHandler.data);
+            }
+
+            RefreshSoundboardButtons();
+        }
+
+        private static List<string> ParseGitHubFileNames(string json, string extension)
+        {
+            List<string> names = new List<string>();
+            string search = "\"name\":\"";
+            int idx = 0;
+            while ((idx = json.IndexOf(search, idx)) != -1)
+            {
+                idx += search.Length;
+                int end = json.IndexOf("\"", idx);
+                if (end == -1) break;
+                string name = json.Substring(idx, end - idx);
+                if (name.EndsWith(extension, System.StringComparison.OrdinalIgnoreCase))
+                    names.Add(name);
+                idx = end;
+            }
+            return names;
+        }
+
+        public static void PlayLocal(string path)
+        {
+            StopAllSounds();
+            activeRoutine = Instance.StartCoroutine(PlayLocalCoroutine(path));
+        }
+
+        private static IEnumerator PlayLocalCoroutine(string fullPath)
+        {
+            Recorder voiceRecorder = Object.FindFirstObjectByType<Recorder>();
             if (voiceRecorder == null) yield break;
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + fullPath, AudioType.MPEG))
@@ -115,7 +248,7 @@ namespace Nothing.Menu
                     if (isLooping)
                     {
                         if (localSoundObj != null) Destroy(localSoundObj);
-                        activeRoutine = Instance.StartCoroutine(PlayMP3(fullPath));
+                        activeRoutine = Instance.StartCoroutine(PlayLocalCoroutine(fullPath));
                         yield break;
                     }
 
@@ -140,13 +273,13 @@ namespace Nothing.Menu
 
             if (localSoundObj != null) Destroy(localSoundObj);
 
-            GameObject[] ghosts = GameObject.FindObjectsOfType<GameObject>();
+            GameObject[] ghosts = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (GameObject g in ghosts)
             {
                 if (g.name == "NothingSound_Local") Destroy(g);
             }
 
-            Recorder voiceRecorder = Object.FindObjectOfType<Recorder>();
+            Recorder voiceRecorder = Object.FindFirstObjectByType<Recorder>();
             if (voiceRecorder != null)
             {
                 voiceRecorder.SourceType = Recorder.InputSourceType.Microphone;
