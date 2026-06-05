@@ -57,6 +57,7 @@ namespace Nothing.Menu
                     new ButtonInfo { buttonText = "Equip Gun", method =() => GunTemplate.GunTest(), toolTip = "", isTogglable = true},
                     new ButtonInfo { buttonText = "Disable Notifications", method = () => NotifiLib.SetEnabled(), toolTip = "", isTogglable = true },
                     new ButtonInfo { buttonText = "Disable PC Notifications", method = () => NotifiLib.SetGuiEnabled(), toolTip = "", isTogglable = true },
+                    new ButtonInfo { buttonText = "Disable PC Array List", enableMethod = () => { Settings.pcArrayList = false; SaveSystem.Save(); }, disableMethod = () => { Settings.pcArrayList = true; SaveSystem.Save(); }, toolTip = "", isTogglable = true },
                 },
 
                 new ButtonInfo[] {

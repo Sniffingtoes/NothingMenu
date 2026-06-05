@@ -6,6 +6,7 @@ using NothingMenu.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Nothing.Menu
 {
@@ -24,8 +25,9 @@ namespace Nothing.Menu
         private int _lastBuiltCategory = -1;
         private int _titleClickCount = 0;
         private float _lastTitleClickTime = -10f;
-        private GUIStyle _titleStyle, _subtleStyle, _navStyle, _activeNavStyle, _modButtonStyle, _searchStyle, _emptyStyle, _pillStyle, _consoleStyle, _consoleInputStyle, _consoleButtonStyle, _scrollbarStyle, _scrollThumbStyle;
-        private Texture2D _windowTex, _panelTex, _surfaceTex, _activeTex, _accentTex, _hoverTex, _lineTex, _searchTex, _enabledTex, _disabledTex, _scrollTrackTex, _scrollThumbTex, _scrollThumbHoverTex;
+        private GUIStyle _titleStyle, _subtleStyle, _navStyle, _activeNavStyle, _modButtonStyle, _searchStyle, _emptyStyle, _pillStyle, _consoleStyle, _consoleInputStyle, _consoleButtonStyle, _arrayTitleStyle, _arrayRowStyle, _scrollbarStyle, _scrollThumbStyle;
+        private Texture2D _windowTex, _panelTex, _surfaceTex, _activeTex, _accentTex, _softAccentTex, _hoverTex, _lineTex, _searchTex, _enabledTex, _disabledTex, _scrollTrackTex, _scrollThumbTex, _scrollThumbHoverTex, _windowShadowTex, _logoTex;
+        private Color _shadowColor;
         private bool _stylesInitialized = false;
         private int _styleThemeIndex = -1;
         private readonly List<ButtonInfo> _displayList = new List<ButtonInfo>(64);
@@ -54,39 +56,44 @@ namespace Nothing.Menu
             if (_stylesInitialized && _styleThemeIndex == ThemeManager.currentThemeIndex) return;
 
             ThemeManager.Theme theme = ThemeManager.GetColors();
-            Color background = WithAlpha(Darken(theme.Background, 0.58f), 0.98f);
-            Color panel = WithAlpha(Mix(theme.Background, theme.Button, 0.45f), 0.98f);
-            Color surface = WithAlpha(Mix(theme.Button, theme.Background, 0.25f), 1f);
-            Color accent = WithAlpha(Mix(theme.Button, theme.Text, 0.35f), 1f);
-            Color accentDim = WithAlpha(accent, 0.28f);
+            Color background = WithAlpha(Darken(theme.Background, 0.68f), 0.96f);
+            Color panel = WithAlpha(Mix(theme.Background, theme.Button, 0.34f), 0.91f);
+            Color surface = WithAlpha(Mix(theme.Button, theme.Background, 0.18f), 0.94f);
+            Color accent = WithAlpha(Mix(theme.Button, theme.Text, 0.42f), 1f);
+            Color accentDim = WithAlpha(accent, 0.22f);
             Color text = theme.Text;
-            Color mutedText = WithAlpha(Mix(theme.Text, theme.Background, 0.38f), 1f);
+            Color mutedText = WithAlpha(Mix(theme.Text, theme.Background, 0.48f), 1f);
+            _shadowColor = WithAlpha(Color.black, 0.74f);
 
             _windowTex = MakeTex(background);
             _panelTex = MakeTex(panel);
             _surfaceTex = MakeTex(surface);
             _activeTex = MakeTex(accentDim);
             _accentTex = MakeTex(accent);
-            _hoverTex = MakeTex(WithAlpha(theme.Text, 0.08f));
-            _lineTex = MakeTex(WithAlpha(theme.Text, 0.11f));
-            _searchTex = MakeTex(Mix(theme.Button, theme.Background, 0.18f));
+            _softAccentTex = MakeTex(WithAlpha(accent, 0.14f));
+            _hoverTex = MakeTex(WithAlpha(theme.Text, 0.075f));
+            _lineTex = MakeTex(WithAlpha(theme.Text, 0.085f));
+            _searchTex = MakeTex(WithAlpha(Mix(theme.Button, theme.Background, 0.12f), 0.95f));
             _enabledTex = MakeTex(new Color(0.32f, 0.78f, 0.48f, 0.9f));
-            _disabledTex = MakeTex(Mix(theme.Button, theme.Background, 0.45f));
+            _disabledTex = MakeTex(WithAlpha(Mix(theme.Button, theme.Background, 0.5f), 0.82f));
             _scrollTrackTex = MakeTex(WithAlpha(theme.Text, 0.045f));
             _scrollThumbTex = MakeTex(WithAlpha(accent, 0.72f));
             _scrollThumbHoverTex = MakeTex(WithAlpha(Mix(accent, theme.Text, 0.25f), 0.92f));
+            _windowShadowTex = MakeTex(WithAlpha(Color.black, 0.28f));
 
-            _titleStyle = new GUIStyle { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = text } };
-            _subtleStyle = new GUIStyle { fontSize = 12, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText } };
-            _navStyle = new GUIStyle { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText }, hover = { textColor = text, background = _hoverTex }, padding = new RectOffset(16, 10, 0, 0) };
+            _titleStyle = new GUIStyle { fontSize = 23, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = text } };
+            _subtleStyle = new GUIStyle { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText } };
+            _navStyle = new GUIStyle { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText }, hover = { textColor = text, background = _hoverTex }, active = { textColor = text, background = _softAccentTex }, padding = new RectOffset(18, 10, 0, 0) };
             _activeNavStyle = new GUIStyle(_navStyle) { normal = { textColor = text, background = _activeTex } };
-            _modButtonStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = text }, hover = { textColor = text }, padding = new RectOffset(16, 54, 0, 0) };
-            _searchStyle = new GUIStyle { fontSize = 14, alignment = TextAnchor.MiddleLeft, normal = { background = _searchTex, textColor = text }, focused = { background = _searchTex, textColor = text }, padding = new RectOffset(14, 14, 7, 7) };
+            _modButtonStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontSize = 14, fontStyle = FontStyle.Bold, normal = { textColor = text }, hover = { textColor = text, background = _hoverTex }, active = { textColor = text, background = _softAccentTex }, padding = new RectOffset(18, 58, 0, 0) };
+            _searchStyle = new GUIStyle { fontSize = 14, alignment = TextAnchor.MiddleLeft, normal = { background = _searchTex, textColor = text }, focused = { background = _searchTex, textColor = text }, padding = new RectOffset(15, 14, 7, 7) };
             _emptyStyle = new GUIStyle { fontSize = 15, alignment = TextAnchor.MiddleCenter, normal = { textColor = mutedText } };
             _pillStyle = new GUIStyle { fontSize = 11, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = text } };
             _consoleStyle = new GUIStyle { fontSize = 13, alignment = TextAnchor.UpperLeft, wordWrap = true, normal = { textColor = text }, padding = new RectOffset(12, 12, 10, 10) };
             _consoleInputStyle = new GUIStyle(_searchStyle) { fontSize = 13 };
             _consoleButtonStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontSize = 12, fontStyle = FontStyle.Bold, normal = { textColor = text }, hover = { textColor = text } };
+            _arrayTitleStyle = new GUIStyle { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText } };
+            _arrayRowStyle = new GUIStyle { fontSize = 14, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = text } };
             _scrollbarStyle = new GUIStyle(GUI.skin.verticalScrollbar) { fixedWidth = 10, margin = new RectOffset(6, 0, 0, 0), padding = new RectOffset(2, 2, 2, 2) };
             _scrollbarStyle.normal.background = _scrollTrackTex;
             _scrollbarStyle.hover.background = _scrollTrackTex;
@@ -98,6 +105,23 @@ namespace Nothing.Menu
 
             _stylesInitialized = true;
             _styleThemeIndex = ThemeManager.currentThemeIndex;
+            LoadLogoTexture();
+        }
+
+        void LoadLogoTexture()
+        {
+            if (_logoTex != null) return;
+
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("NothingMenu.Resources.logo.png"))
+            {
+                if (stream == null) return;
+
+                byte[] bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+                _logoTex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                _logoTex.LoadImage(bytes);
+                _logoTex.filterMode = FilterMode.Bilinear;
+            }
         }
 
         Texture2D MakeTex(Color col)
@@ -114,10 +138,13 @@ namespace Nothing.Menu
 
         void OnGUI()
         {
-            if (!_showMenu) return;
-
             InitializeStyles();
             GUI.depth = 100;
+            DrawPcArrayList();
+
+            if (!_showMenu) return;
+
+            GUI.DrawTexture(new Rect(_windowRect.x + 8f, _windowRect.y + 10f, _windowRect.width, _windowRect.height), _windowShadowTex);
             _windowRect = GUI.Window(99, _windowRect, DrawWindow, "", GUIStyle.none);
         }
 
@@ -128,6 +155,7 @@ namespace Nothing.Menu
             DrawRect(new Rect(0, 0, _windowRect.width, 76), _panelTex);
             DrawRect(new Rect(0, 75, _windowRect.width, 1), _lineTex);
             DrawRect(new Rect(0, 0, 5, _windowRect.height), _accentTex);
+            DrawRect(new Rect(18, 74, _windowRect.width - 36, 2), _softAccentTex);
 
             DrawHeader();
             DrawNavigation();
@@ -138,12 +166,18 @@ namespace Nothing.Menu
 
         void DrawHeader()
         {
-            Rect titleRect = new Rect(24, 14, 250, 28);
-            GUI.Label(titleRect, PluginTitle, _titleStyle);
+            if (_logoTex != null)
+            {
+                DrawRect(new Rect(22, 10, 52, 52), _softAccentTex);
+                GUI.DrawTexture(new Rect(27, 15, 42, 42), _logoTex, ScaleMode.ScaleToFit, true);
+            }
+
+            Rect titleRect = new Rect(_logoTex != null ? 84 : 24, 14, 250, 28);
+            DrawShadowLabel(titleRect, PluginTitle, _titleStyle);
             if (GUI.Button(titleRect, GUIContent.none, GUIStyle.none))
                 HandleTitleClick();
 
-            GUI.Label(new Rect(25, 43, 260, 20), CurrentHeaderText(), _subtleStyle);
+            GUI.Label(new Rect(_logoTex != null ? 85 : 25, 43, 260, 20), CurrentHeaderText().ToUpperInvariant(), _subtleStyle);
 
             GUI.SetNextControlName("SearchField");
             string lastSearch = _searchText;
@@ -159,6 +193,7 @@ namespace Nothing.Menu
         {
             Rect navRect = new Rect(18, 96, 168, _windowRect.height - 120);
             DrawRect(navRect, _panelTex);
+            DrawRect(new Rect(navRect.x, navRect.y, navRect.width, 2), _softAccentTex);
             DrawRect(new Rect(navRect.xMax + 14, navRect.y, 1, navRect.height), _lineTex);
 
             GUILayout.BeginArea(new Rect(navRect.x + 10, navRect.y + 12, navRect.width - 20, navRect.height - 24));
@@ -170,10 +205,42 @@ namespace Nothing.Menu
             GUILayout.EndArea();
         }
 
+        void DrawPcArrayList()
+        {
+            if (!Nothing.Settings.pcArrayList) return;
+
+            float x = 14f;
+            float y = 12f;
+            float width = 260f;
+            DrawShadowLabel(new Rect(x, y, width, 18f), "Enabled Mods", _arrayTitleStyle);
+            y += 22f;
+            int row = 0;
+            foreach (ButtonInfo btn in EnabledMods.RuntimeEnabledButtons)
+            {
+                if (!btn.enabled || ContainsIgnoreCase(btn.buttonText, "return")) continue;
+
+                Rect rowRect = new Rect(x, y + row * 20f, width, 20f);
+                if (rowRect.yMax > Screen.height - 12f) break;
+
+                DrawShadowLabel(rowRect, btn.buttonText, _arrayRowStyle);
+                row++;
+            }
+        }
+
+        void DrawShadowLabel(Rect rect, string text, GUIStyle style)
+        {
+            Color original = style.normal.textColor;
+            style.normal.textColor = _shadowColor;
+            GUI.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width, rect.height), text, style);
+            style.normal.textColor = original;
+            GUI.Label(rect, text, style);
+        }
+
         void DrawContent()
         {
             Rect contentRect = new Rect(216, 96, _windowRect.width - 240, _windowRect.height - 120);
             DrawRect(contentRect, _panelTex);
+            DrawRect(new Rect(contentRect.x, contentRect.y, contentRect.width, 2), _softAccentTex);
 
             if (_pcCategory == ConsoleCategory && string.IsNullOrEmpty(_searchText))
             {
@@ -182,8 +249,8 @@ namespace Nothing.Menu
             }
 
             RebuildDisplayListIfNeeded();
-            GUI.Label(new Rect(contentRect.x + 18, contentRect.y + 13, 300, 22), string.IsNullOrEmpty(_searchText) ? GetManualTabName(_pcCategory) : "Search Results", _titleStyle);
-            GUI.Label(new Rect(contentRect.x + 20, contentRect.y + 43, 300, 18), _displayList.Count + " items", _subtleStyle);
+            DrawShadowLabel(new Rect(contentRect.x + 18, contentRect.y + 13, 300, 24), string.IsNullOrEmpty(_searchText) ? GetManualTabName(_pcCategory) : "Search Results", _titleStyle);
+            GUI.Label(new Rect(contentRect.x + 20, contentRect.y + 44, 300, 18), (_displayList.Count + " items").ToUpperInvariant(), _subtleStyle);
 
             Rect listRect = new Rect(contentRect.x + 16, contentRect.y + 76, contentRect.width - 32, contentRect.height - 92);
             GUILayout.BeginArea(listRect);
@@ -217,7 +284,11 @@ namespace Nothing.Menu
         {
             bool isActive = _pcCategory == category && string.IsNullOrEmpty(_searchText);
             Rect row = GUILayoutUtility.GetRect(128, 34);
-            if (isActive) DrawRect(new Rect(row.x, row.y, 4, row.height), _accentTex);
+            if (isActive)
+            {
+                DrawRect(new Rect(row.x, row.y, row.width, row.height), _softAccentTex);
+                DrawRect(new Rect(row.x, row.y, 4, row.height), _accentTex);
+            }
 
             if (GUI.Button(row, label, isActive ? _activeNavStyle : _navStyle))
             {
@@ -233,8 +304,8 @@ namespace Nothing.Menu
         {
             ConsoleCommands.AddWelcomeLines(_consoleLines);
 
-            GUI.Label(new Rect(contentRect.x + 18, contentRect.y + 13, 300, 22), "Console", _titleStyle);
-            GUI.Label(new Rect(contentRect.x + 20, contentRect.y + 43, 420, 18), "commands and quick tools", _subtleStyle);
+            DrawShadowLabel(new Rect(contentRect.x + 18, contentRect.y + 13, 300, 24), "Console", _titleStyle);
+            GUI.Label(new Rect(contentRect.x + 20, contentRect.y + 44, 420, 18), "COMMANDS AND QUICK TOOLS", _subtleStyle);
 
             Rect copyRect = new Rect(contentRect.x + contentRect.width - 176, contentRect.y + 20, 144, 30);
             DrawRect(copyRect, _accentTex);
@@ -310,6 +381,7 @@ namespace Nothing.Menu
             bool active = btn.isTogglable && btn.enabled;
             DrawRect(r, active ? _activeTex : _surfaceTex);
             DrawRect(new Rect(r.x, r.y, 4, r.height), active ? _enabledTex : _disabledTex);
+            DrawRect(new Rect(r.x + 14, r.yMax - 1, r.width - 28, 1), active ? _accentTex : _lineTex);
 
             if (GUI.Button(new Rect(r.x, r.y, r.width, r.height), btn.buttonText, _modButtonStyle))
             {

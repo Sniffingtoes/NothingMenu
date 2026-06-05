@@ -18,6 +18,7 @@ namespace Nothing.Menu
         public int SelectedBoostIndex = 0;
         public int SelectedGravityIndex = 0;
         public int SelectedAntiReportIndex = 0;
+        public bool PcArrayListEnabled = true;
         public List<string> EnabledMods = new List<string>();
         public List<string> FavoritedMods = new List<string>();
     }
@@ -64,6 +65,7 @@ namespace Nothing.Menu
                 data.SelectedFlySpeedIndex = FlySettings.index;
                 data.SelectedBoostIndex = BoostSettings.index;
                 data.SelectedAntiReportIndex = AntiReportSettings.index;
+                data.PcArrayListEnabled = Settings.pcArrayList;
 
                 foreach (var category in Buttons.buttons)
                 {
@@ -99,6 +101,7 @@ namespace Nothing.Menu
                 FlySettings.index = data.SelectedFlySpeedIndex;
                 BoostSettings.index = data.SelectedBoostIndex;
                 AntiReportSettings.index = data.SelectedAntiReportIndex;
+                Settings.pcArrayList = data.PcArrayListEnabled;
 
                 Movement.FlySpeed = FlySettings.values[FlySettings.index];
                 Movement.SpeedBoostSpeed = BoostSettings.values[BoostSettings.index];

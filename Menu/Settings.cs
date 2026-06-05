@@ -46,6 +46,7 @@ namespace Nothing
         public static bool disconnectButton = true;
         public static bool rightHanded;
         public static bool disableNotifications;
+        public static bool pcArrayList = true;
         public static KeyCode keyboardButton = KeyCode.Q;
         public static Vector3 menuSize = new Vector3(0.06f, 0.63f, 0.8f);
         public static int buttonsPerPage = 5;

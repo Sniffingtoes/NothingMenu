@@ -107,6 +107,10 @@ namespace Nothing.Notifications
         }
 
         private GUIStyle _notifStyle;
+        private GUIStyle _notifTitleStyle;
+        private Texture2D _notifBgTex;
+        private Texture2D _notifAccentTex;
+        private Texture2D _notifShadowTex;
 
         private void OnGUI()
         {
@@ -114,17 +118,42 @@ namespace Nothing.Notifications
 
             if (_notifStyle == null)
             {
-                _notifStyle = new GUIStyle(GUI.skin.box);
+                _notifBgTex = MakeTex(new Color(0.03f, 0.03f, 0.035f, 0.86f));
+                _notifAccentTex = MakeTex(new Color(0.2f, 0.55f, 1f, 0.92f));
+                _notifShadowTex = MakeTex(new Color(0f, 0f, 0f, 0.24f));
+                _notifTitleStyle = new GUIStyle(GUI.skin.label);
+                _notifTitleStyle.alignment = TextAnchor.MiddleLeft;
+                _notifTitleStyle.fontSize = 10;
+                _notifTitleStyle.fontStyle = FontStyle.Bold;
+                _notifTitleStyle.normal.textColor = new Color(0.72f, 0.8f, 0.92f, 1f);
+
+                _notifStyle = new GUIStyle(GUI.skin.label);
                 _notifStyle.alignment = TextAnchor.MiddleLeft;
-                _notifStyle.fontSize = 14;
+                _notifStyle.fontSize = 13;
+                _notifStyle.fontStyle = FontStyle.Bold;
                 _notifStyle.normal.textColor = Color.white;
+                _notifStyle.padding = new RectOffset(14, 10, 0, 0);
             }
 
             for (int i = 0; i < activeNotifs.Count; i++)
             {
-                float yPos = 10 + (i * 35);
-                GUI.Box(new Rect(10, yPos, 250, 30), " [!] " + activeNotifs[i].notificationText, _notifStyle);
+                float yPos = Screen.height - 18f - 38f - ((activeNotifs.Count - 1 - i) * 44f);
+                Rect rect = new Rect(14, yPos, 292, 38);
+                GUI.DrawTexture(new Rect(rect.x + 5f, rect.y + 5f, rect.width, rect.height), _notifShadowTex);
+                GUI.DrawTexture(rect, _notifBgTex);
+                GUI.DrawTexture(new Rect(rect.x, rect.y, 4, rect.height), _notifAccentTex);
+                GUI.DrawTexture(new Rect(rect.x + 14f, rect.yMax - 2f, rect.width - 28f, 2f), _notifAccentTex);
+                GUI.Label(new Rect(rect.x + 14, rect.y + 4, rect.width - 24, 11), "NOTIFICATION", _notifTitleStyle);
+                GUI.Label(new Rect(rect.x, rect.y + 16, rect.width, 18), activeNotifs[i].notificationText, _notifStyle);
             }
+        }
+
+        private Texture2D MakeTex(Color col)
+        {
+            Texture2D pix = new Texture2D(1, 1);
+            pix.SetPixel(0, 0, col);
+            pix.Apply();
+            return pix;
         }
 
         public static void SendNotification(string text)

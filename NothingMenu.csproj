@@ -17,6 +17,7 @@
     <None Remove="Resources\Click4.mp3" />
     <None Remove="Resources\Click5.mp3" />
     <None Remove="Resources\crown.png" />
+    <None Remove="Resources\logo.png" />
     <None Remove="Resources\modicon.png" />
     <None Remove="Resources\search.png" />
     <None Remove="Resources\settings.png" />
@@ -29,6 +30,7 @@
     <EmbeddedResource Include="Resources\Click4.mp3" />
     <EmbeddedResource Include="Resources\Click5.mp3" />
     <EmbeddedResource Include="Resources\crown.png" />
+    <EmbeddedResource Include="Resources\logo.png" />
     <EmbeddedResource Include="Resources\modicon.png" />
     <EmbeddedResource Include="Resources\search.png" />
     <EmbeddedResource Include="Resources\settings.png" />
@@ -48,7 +50,7 @@
       <HintPath>$(GameAssemblyPath)\andywiecko.BurstTriangulator.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>$(GameAssemblyPath)\Assembly-CSharp-firstpass.dll</HintPath>
@@ -90,10 +92,10 @@
       <HintPath>$(GameAssemblyPath)\Modio.Unity.UI.dll</HintPath>
     </Reference>
     <Reference Include="PhotonRealtime">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\PhotonRealtime.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\PhotonRealtime.dll</HintPath>
     </Reference>
     <Reference Include="PhotonUnityNetworking">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\PhotonUnityNetworking.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\PhotonUnityNetworking.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Cinemachine">
       <HintPath>$(GameAssemblyPath)\Unity.Cinemachine.dll</HintPath>

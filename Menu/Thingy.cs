@@ -6,7 +6,8 @@ namespace Nothing.Menu
     public class Thingy : MonoBehaviour
     {
         private GUIStyle _brandStyle, _fpsStyle, _labelStyle;
-        private Texture2D _barTex, _panelTex, _accentTex, _goodTex, _warnTex, _badTex;
+        private Texture2D _barTex, _panelTex, _accentTex, _softAccentTex, _shadowTex, _goodTex, _warnTex, _badTex;
+        private Color _shadowColor;
         private bool _stylesInitialized = false;
         private int _styleThemeIndex = -1;
         private float _deltaTime = 0.0f;
@@ -45,17 +46,20 @@ namespace Nothing.Menu
             Color accent = Mix(theme.Button, theme.Text, 0.35f);
             Color text = theme.Text;
             Color mutedText = Mix(theme.Text, theme.Background, 0.38f);
+            _shadowColor = WithAlpha(Color.black, 0.72f);
 
-            _barTex = MakeTex(WithAlpha(Darken(theme.Background, 0.58f), 0.94f));
-            _panelTex = MakeTex(WithAlpha(Mix(theme.Background, theme.Button, 0.55f), 0.96f));
+            _barTex = MakeTex(WithAlpha(Darken(theme.Background, 0.68f), 0.84f));
+            _panelTex = MakeTex(WithAlpha(Mix(theme.Background, theme.Button, 0.44f), 0.88f));
             _accentTex = MakeTex(accent);
+            _softAccentTex = MakeTex(WithAlpha(accent, 0.15f));
+            _shadowTex = MakeTex(WithAlpha(Color.black, 0.24f));
             _goodTex = MakeTex(new Color(0.32f, 0.78f, 0.48f, 1f));
             _warnTex = MakeTex(new Color(0.92f, 0.68f, 0.25f, 1f));
             _badTex = MakeTex(new Color(0.92f, 0.32f, 0.38f, 1f));
 
             _brandStyle = new GUIStyle { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = text } };
             _fpsStyle = new GUIStyle { fontSize = 14, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = text } };
-            _labelStyle = new GUIStyle { fontSize = 10, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = mutedText } };
+            _labelStyle = new GUIStyle { fontSize = 10, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, normal = { textColor = mutedText } };
             _stylesInitialized = true;
             _styleThemeIndex = ThemeManager.currentThemeIndex;
         }
@@ -66,21 +70,32 @@ namespace Nothing.Menu
 
             InitializeStyles();
 
-            float width = 328f;
-            float height = 42f;
+            float width = 318f;
+            float height = 40f;
             float xPos = (Screen.width - width) / 2f;
-            Rect barRect = new Rect(xPos, 18f, width, height);
+            Rect barRect = new Rect(xPos, 14f, width, height);
 
+            GUI.DrawTexture(new Rect(barRect.x + 5f, barRect.y + 6f, barRect.width, barRect.height), _shadowTex);
             GUI.DrawTexture(barRect, _barTex);
             GUI.DrawTexture(new Rect(barRect.x, barRect.y, 4f, barRect.height), _accentTex);
+            GUI.DrawTexture(new Rect(barRect.x + 16f, barRect.yMax - 2f, barRect.width - 32f, 2f), _softAccentTex);
 
-            GUI.Label(new Rect(barRect.x + 18f, barRect.y + 6f, 140f, 18f), "NOTHING MENU", _brandStyle);
-            GUI.Label(new Rect(barRect.x + 18f, barRect.y + 23f, 140f, 12f), "DESKTOP OVERLAY", _labelStyle);
+            DrawShadowLabel(new Rect(barRect.x + 18f, barRect.y + 5f, 150f, 18f), "NOTHING MENU", _brandStyle);
+            GUI.Label(new Rect(barRect.x + 18f, barRect.y + 23f, 150f, 12f), "DESKTOP OVERLAY", _labelStyle);
 
-            Rect fpsPanel = new Rect(barRect.xMax - 100f, barRect.y + 7f, 78f, 28f);
+            Rect fpsPanel = new Rect(barRect.xMax - 98f, barRect.y + 7f, 78f, 26f);
             GUI.DrawTexture(fpsPanel, _panelTex);
             GUI.DrawTexture(new Rect(fpsPanel.x, fpsPanel.yMax - 3f, fpsPanel.width, 3f), GetFpsTexture());
             GUI.Label(fpsPanel, _fpsDisplay.ToString() + " FPS", _fpsStyle);
+        }
+
+        void DrawShadowLabel(Rect rect, string text, GUIStyle style)
+        {
+            Color original = style.normal.textColor;
+            style.normal.textColor = _shadowColor;
+            GUI.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width, rect.height), text, style);
+            style.normal.textColor = original;
+            GUI.Label(rect, text, style);
         }
 
         Texture2D GetFpsTexture()
