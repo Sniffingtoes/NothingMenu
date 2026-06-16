@@ -14,7 +14,6 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using UnityEngine.Windows;
 using UnityEngine.XR;
-
 using Valve.VR;
 
 using static Nothing.Menu.GunTemplate;
@@ -127,30 +126,47 @@ namespace Nothing.Mods
 
         public static void JoystickFly()
         {
-            Vector3 right = GTPlayer.Instance.bodyCollider.transform.right;
-            Vector3 forward = GTPlayer.Instance.bodyCollider.transform.forward;
+            if (SteamVR.instance == null ||
+                SteamVR_Actions.gorillaTag_LeftJoystick2DAxis == null ||
+                SteamVR_Actions.gorillaTag_RightJoystick2DAxis == null)
+            {
+                return;
+            }
+
+            if (GTPlayer.Instance == null || GTPlayer.Instance.bodyCollider == null)
+            {
+                return;
+            }
+
+            Transform playerTransform = GTPlayer.Instance.bodyCollider.transform;
+            Vector3 right = playerTransform.right;
+            Vector3 forward = playerTransform.forward;
 
             right.y = 0f;
             forward.y = 0f;
             right.Normalize();
             forward.Normalize();
 
+            Vector2 leftAxis = SteamVR_Actions.gorillaTag_LeftJoystick2DAxis.axis;
+            Vector2 rightAxis = SteamVR_Actions.gorillaTag_RightJoystick2DAxis.axis;
+
             Vector3 inputMovement = new Vector3(
-                SteamVR_Actions.gorillaTag_LeftJoystick2DAxis.axis.x,
-                SteamVR_Actions.gorillaTag_RightJoystick2DAxis.axis.y,
-                SteamVR_Actions.gorillaTag_LeftJoystick2DAxis.axis.y
+                leftAxis.x,
+                rightAxis.y,
+                leftAxis.y
             );
 
             Vector3 desiredMovement = (inputMovement.x * right) + (inputMovement.z * forward) + (inputMovement.y * Vector3.up);
-
             desiredMovement *= (Time.deltaTime * FlySpeed * 100f);
 
             Rigidbody rb = GTPlayer.Instance.bodyCollider.attachedRigidbody;
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, desiredMovement, 0.1287f);
 
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, desiredMovement, 0.1287f);
-
-            const float gravityForce = 9.81f;
-            rb.AddForce(Vector3.up * gravityForce, ForceMode.Acceleration);
+                const float gravityForce = 9.81f;
+                rb.AddForce(Vector3.up * gravityForce, ForceMode.Acceleration);
+            }
         }
 
         public static void NoclipFly()

@@ -1,9 +1,5 @@
 using HarmonyLib;
-
 using JetBrains.Annotations;
-
-using PlayFab.EventsModels;
-
 using System.Reflection;
 
 namespace Nothing.Patches.Internal
@@ -19,16 +15,12 @@ namespace Nothing.Patches.Internal
                 !enabled;
         }
 
-        [HarmonyPatch]
         public class TelemetryPatch2
         {
-            static MethodBase TargetMethod()
+            public static bool Prefix()
             {
-                return AccessTools.Method(typeof(GorillaTelemetry), "EnqueueTelemetryEventPlayFab");
+                return !enabled;
             }
-
-            private static bool Prefix(EventContents eventContent) =>
-                !enabled;
         }
     }
 }

@@ -5,6 +5,6 @@ namespace Nothing
         public const string GUID = "org.megamind.Nothing";
         public const string Name = "Nothing";
         public const string Description = "made by @mega.mindddd";
-        public const string Version = "1.4.0";
+        public const string Version = "1.4.1";
     }
 }

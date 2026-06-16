@@ -3,6 +3,8 @@ using UnityEngine;
 using Nothing.Menu;
 using Nothing.Notifications;
 using NothingMenu.Utils;
+using System;
+using System.Collections;
 
 namespace Nothing
 {
@@ -15,10 +17,18 @@ namespace Nothing
         public static void OnPlayerSpawned()
         {
             if (isInitialized) return;
+            isInitialized = true;
 
-            Nothing.Menu.Buttons.Init();
-            SaveSystem.Load();
-            Patches.PatchHandler.PatchAll();
+            try
+            {
+                Nothing.Menu.Buttons.Init();
+                SaveSystem.Load();
+                Patches.PatchHandler.PatchAll();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[Nothing Menu] Non-fatal patch execution failure bypassed: {ex.Message}");
+            }
 
             NotifiLib.SendNotification("Test notification");
 
@@ -30,13 +40,23 @@ namespace Nothing
             uiObject.AddComponent<ModsPP>();
 
             DontDestroyOnLoad(uiObject);
-
-            isInitialized = true;
         }
 
         private void Update()
         {
-            if (!isInitialized && GorillaTagger.Instance != null && GorillaTagger.Instance.offlineVRRig != null)
+            if (!isInitialized)
+            {
+                if (GorillaTagger.Instance != null && GorillaTagger.Instance.offlineVRRig != null)
+                {
+                    StartCoroutine(InitializationDelayRoutine());
+                }
+            }
+        }
+
+        private IEnumerator InitializationDelayRoutine()
+        {
+            yield return new WaitForEndOfFrame();
+            if (!isInitialized)
             {
                 OnPlayerSpawned();
             }

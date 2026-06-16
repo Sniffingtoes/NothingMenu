@@ -378,7 +378,10 @@ namespace Nothing.Menu
                 allTexts.Add(tmp);
             }
 
-            CreateMenuText(PluginInfo.Name + " V1.3", new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
+            string[] versionParts = PluginInfo.Version.Split('.');
+            string shortVersion = versionParts.Length >= 2 ? $"{versionParts[0]}.{versionParts[1]}" : PluginInfo.Version;
+
+            CreateMenuText(PluginInfo.Name + " V" + shortVersion, new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
 
             if (fpsCounter)
             {
