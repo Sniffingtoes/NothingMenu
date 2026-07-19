@@ -3,9 +3,7 @@ using Nothing.Mods;
 using Nothing.Notifications;
 using NothingMenu.Menu;
 using NothingMenu.Mods;
-
 using Oculus.Interaction;
-
 using UnityEngine;
 using static Nothing.Menu.GunTemplate;
 using static Nothing.Menu.Main;
@@ -58,6 +56,8 @@ namespace Nothing.Menu
                     new ButtonInfo { buttonText = "Disable Notifications", method = () => NotifiLib.SetEnabled(), toolTip = "", isTogglable = true },
                     new ButtonInfo { buttonText = "Disable PC Notifications", method = () => NotifiLib.SetGuiEnabled(), toolTip = "", isTogglable = true },
                     new ButtonInfo { buttonText = "Disable PC Array List", enableMethod = () => { Settings.pcArrayList = false; SaveSystem.Save(); }, disableMethod = () => { Settings.pcArrayList = true; SaveSystem.Save(); }, toolTip = "", isTogglable = true },
+                    new ButtonInfo { buttonText = "Disable PC Watermark", enableMethod = () => Settings.pcWatermark = false, disableMethod = () => Settings.pcWatermark = true, enabled = !Settings.pcWatermark, toolTip = "", isTogglable = true },
+                    new ButtonInfo { buttonText = "Disable PC Room Joiner", enableMethod = () => Settings.pcRoomJoiner = false, disableMethod = () => Settings.pcRoomJoiner = true, enabled = !Settings.pcRoomJoiner, toolTip = "", isTogglable = true },
                 },
 
                 new ButtonInfo[] {
@@ -124,7 +124,7 @@ namespace Nothing.Menu
 
                 new ButtonInfo[] {
                     new ButtonInfo { buttonText = "Return to Main", method =() => currentCategory = 0, isTogglable = false},
-                    new ButtonInfo { buttonText = "Anti Report", method =() => Usefull.NoFingerMovement(), toolTip = "", isTogglable = true},
+                    new ButtonInfo { buttonText = "Anti Report", method =() => Usefull.AntiReportLogic(), toolTip = "", isTogglable = true},
                     new ButtonInfo { buttonText = "No Finger Movement", method =() => Usefull.NoFingerMovement(), toolTip = "", isTogglable = true},
                     new ButtonInfo { buttonText = "Tp To Stump", method =() => Usefull.TPStump(), toolTip = "", isTogglable = false},
                     new ButtonInfo { buttonText = "Tp To Stump [RT]", method =() => Usefull.TPStumpRT(), toolTip = "", isTogglable = true},

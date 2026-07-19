@@ -1,16 +1,16 @@
 using BepInEx;
-
 using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 using UnityEngine.UI;
+using Nothing.Menu;
+using static Nothing.Menu.UI.UiStyle;
 
 using static Nothing.Settings;
 
 namespace Nothing.Notifications
 {
-    [BepInPlugin("org.gorillatag.megamind.notifications", "NotificationLibrary", "1.0.0")]
+    [BepInPlugin("org.gorillatag.megamind.notifications", "NothingNotifications", "1.2.0")]
     public class NotifiLib : BaseUnityPlugin
     {
         public static bool IsInCategory = false;
@@ -23,7 +23,7 @@ namespace Nothing.Notifications
         public static GameObject HUDObj2;
         public static GameObject MainCamera;
 
-        private void Awake() => Logger.LogInfo("Notification Library Loaded");
+        private void Awake() => Logger.LogInfo("Nothing Notification Loaded");
 
         public static void SetEnabled()
         {
@@ -111,49 +111,43 @@ namespace Nothing.Notifications
         private Texture2D _notifBgTex;
         private Texture2D _notifAccentTex;
         private Texture2D _notifShadowTex;
+        private int _notifThemeIndex = -1;
 
         private void OnGUI()
         {
             if (!IsGuiEnabled || IsInCategory) return;
 
-            if (_notifStyle == null)
+            if (_notifStyle == null || _notifThemeIndex != ThemeManager.currentThemeIndex)
             {
-                _notifBgTex = MakeTex(new Color(0.03f, 0.03f, 0.035f, 0.86f));
-                _notifAccentTex = MakeTex(new Color(0.2f, 0.55f, 1f, 0.92f));
-                _notifShadowTex = MakeTex(new Color(0f, 0f, 0f, 0.24f));
+                ThemeManager.Theme theme = ThemeManager.GetColors();
+                _notifBgTex = MakeTex(WithAlpha(Mix(theme.Background, Color.black, 0.8f), 0.98f));
+                _notifAccentTex = MakeTex(WithAlpha(Mix(theme.Button, theme.Text, 0.6f), 1f));
+                _notifShadowTex = MakeTex(new Color(0f, 0f, 0f, 0.48f));
                 _notifTitleStyle = new GUIStyle(GUI.skin.label);
                 _notifTitleStyle.alignment = TextAnchor.MiddleLeft;
                 _notifTitleStyle.fontSize = 10;
                 _notifTitleStyle.fontStyle = FontStyle.Bold;
-                _notifTitleStyle.normal.textColor = new Color(0.72f, 0.8f, 0.92f, 1f);
+                _notifTitleStyle.normal.textColor = Mix(theme.Text, theme.Background, 0.3f);
 
                 _notifStyle = new GUIStyle(GUI.skin.label);
                 _notifStyle.alignment = TextAnchor.MiddleLeft;
-                _notifStyle.fontSize = 13;
+                _notifStyle.fontSize = 15;
                 _notifStyle.fontStyle = FontStyle.Bold;
-                _notifStyle.normal.textColor = Color.white;
-                _notifStyle.padding = new RectOffset(14, 10, 0, 0);
+                _notifStyle.normal.textColor = theme.Text;
+                _notifStyle.padding = new RectOffset(20, 14, 0, 0);
+                _notifThemeIndex = ThemeManager.currentThemeIndex;
             }
 
             for (int i = 0; i < activeNotifs.Count; i++)
             {
-                float yPos = Screen.height - 18f - 38f - ((activeNotifs.Count - 1 - i) * 44f);
-                Rect rect = new Rect(14, yPos, 292, 38);
-                GUI.DrawTexture(new Rect(rect.x + 5f, rect.y + 5f, rect.width, rect.height), _notifShadowTex);
+                float yPos = Screen.height - 24f - 64f - ((activeNotifs.Count - 1 - i) * 72f);
+                Rect rect = new Rect(22f, yPos, 360f, 64f);
+                GUI.DrawTexture(new Rect(rect.x + 7f, rect.y + 9f, rect.width, rect.height), _notifShadowTex);
                 GUI.DrawTexture(rect, _notifBgTex);
-                GUI.DrawTexture(new Rect(rect.x, rect.y, 4, rect.height), _notifAccentTex);
-                GUI.DrawTexture(new Rect(rect.x + 14f, rect.yMax - 2f, rect.width - 28f, 2f), _notifAccentTex);
-                GUI.Label(new Rect(rect.x + 14, rect.y + 4, rect.width - 24, 11), "NOTIFICATION", _notifTitleStyle);
-                GUI.Label(new Rect(rect.x, rect.y + 16, rect.width, 18), activeNotifs[i].notificationText, _notifStyle);
+                GUI.DrawTexture(new Rect(rect.x, rect.y, 5f, rect.height), _notifAccentTex);
+                GUI.DrawTexture(new Rect(rect.x + 20f, rect.yMax - 3f, rect.width - 40f, 2f), _notifAccentTex);
+                GUI.Label(new Rect(rect.x, rect.y + 29f, rect.width, 24f), activeNotifs[i].notificationText, _notifStyle);
             }
-        }
-
-        private Texture2D MakeTex(Color col)
-        {
-            Texture2D pix = new Texture2D(1, 1);
-            pix.SetPixel(0, 0, col);
-            pix.Apply();
-            return pix;
         }
 
         public static void SendNotification(string text)
@@ -169,18 +163,20 @@ namespace Nothing.Notifications
 
             if (IsEnabled && !Nothing.Settings.disableNotifications && !IsInCategory && HUDObj != null)
             {
+                ThemeManager.Theme theme = ThemeManager.GetColors();
+                Color accent = Mix(theme.Button, theme.Text, 0.6f);
                 container = new GameObject("Notif_Container");
                 container.transform.SetParent(HUDObj.transform, false);
                 RectTransform contRect = container.AddComponent<RectTransform>();
-                contRect.sizeDelta = new Vector2(0.42f, 0.12f);
+                contRect.sizeDelta = new Vector2(0.46f, 0.14f);
                 Image bgImage = container.AddComponent<Image>();
-                bgImage.color = new Color(0.04f, 0.04f, 0.04f, 0.94f);
+                bgImage.color = WithAlpha(Mix(theme.Background, Color.black, 0.8f), 0.98f);
 
                 GameObject bar = new GameObject("Bar");
                 bar.transform.SetParent(container.transform, false);
                 bar.transform.localPosition = new Vector3(0, 0, -0.001f);
                 Image barImg = bar.AddComponent<Image>();
-                barImg.color = new Color(0.2f, 0.55f, 1f, 1f);
+                barImg.color = accent;
                 barRect = barImg.rectTransform;
                 barRect.anchorMin = Vector2.zero;
                 barRect.anchorMax = new Vector2(1, 0);
@@ -189,25 +185,25 @@ namespace Nothing.Notifications
 
                 GameObject titleObj = new GameObject("Title");
                 titleObj.transform.SetParent(container.transform, false);
-                titleObj.transform.localPosition = new Vector3(-0.05f, 0.035f, -0.002f);
+                titleObj.transform.localPosition = new Vector3(-0.055f, 0.042f, -0.002f);
                 titleObj.transform.localScale = Vector3.one * 0.001f;
                 Text titleT = titleObj.AddComponent<Text>();
                 titleT.text = "Notification";
                 titleT.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
                 titleT.fontStyle = FontStyle.Bold;
                 titleT.fontSize = 36;
-                titleT.color = Color.white;
+                titleT.color = Mix(theme.Text, theme.Background, 0.3f);
                 titleT.rectTransform.sizeDelta = new Vector2(300, 50);
 
                 GameObject bodyObj = new GameObject("Body");
                 bodyObj.transform.SetParent(container.transform, false);
-                bodyObj.transform.localPosition = new Vector3(0f, -0.028f, -0.002f);
+                bodyObj.transform.localPosition = new Vector3(0f, -0.03f, -0.002f);
                 bodyObj.transform.localScale = Vector3.one * 0.00085f;
                 Text bodyT = bodyObj.AddComponent<Text>();
                 bodyT.text = text;
                 bodyT.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
                 bodyT.fontSize = 30;
-                bodyT.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+                bodyT.color = theme.Text;
                 bodyT.rectTransform.sizeDelta = new Vector2(450, 100);
             }
 

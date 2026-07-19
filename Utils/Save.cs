@@ -18,7 +18,7 @@ namespace Nothing.Menu
         public int SelectedBoostIndex = 0;
         public int SelectedGravityIndex = 0;
         public int SelectedAntiReportIndex = 0;
-        public bool PcArrayListEnabled = true;
+        public bool PcArrayListDisabled = false;
         public List<string> EnabledMods = new List<string>();
         public List<string> FavoritedMods = new List<string>();
     }
@@ -65,7 +65,7 @@ namespace Nothing.Menu
                 data.SelectedFlySpeedIndex = FlySettings.index;
                 data.SelectedBoostIndex = BoostSettings.index;
                 data.SelectedAntiReportIndex = AntiReportSettings.index;
-                data.PcArrayListEnabled = Settings.pcArrayList;
+                data.PcArrayListDisabled = Settings.pcArrayList;
 
                 foreach (var category in Buttons.buttons)
                 {
@@ -74,6 +74,7 @@ namespace Nothing.Menu
                     {
                         if (button.isTogglable && button.enabled)
                         {
+                            if (IsDesktopOverlaySetting(button.buttonText)) continue;
                             if (EnabledMods.IsDisabledServerCheck(button.buttonText)) continue;
                             data.EnabledMods.Add(button.buttonText);
                         }
@@ -101,7 +102,7 @@ namespace Nothing.Menu
                 FlySettings.index = data.SelectedFlySpeedIndex;
                 BoostSettings.index = data.SelectedBoostIndex;
                 AntiReportSettings.index = data.SelectedAntiReportIndex;
-                Settings.pcArrayList = data.PcArrayListEnabled;
+                Settings.pcArrayList = data.PcArrayListDisabled;
 
                 Movement.FlySpeed = FlySettings.values[FlySettings.index];
                 Movement.SpeedBoostSpeed = BoostSettings.values[BoostSettings.index];
@@ -119,6 +120,7 @@ namespace Nothing.Menu
                         if (category == null) continue;
                         foreach (var button in category)
                         {
+                            if (IsDesktopOverlaySetting(button.buttonText)) continue;
                             if (EnabledMods.IsDisabledServerCheck(button.buttonText))
                             {
                                 button.enabled = false;
@@ -141,5 +143,9 @@ namespace Nothing.Menu
             }
             catch (Exception e) { Debug.LogError("Load Failed: " + e.Message); }
         }
+
+        private static bool IsDesktopOverlaySetting(string buttonText) =>
+            buttonText == "Disable PC Watermark" || buttonText == "Disable PC Room Joiner";
+
     }
 }

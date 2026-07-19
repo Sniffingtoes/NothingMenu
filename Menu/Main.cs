@@ -1,12 +1,14 @@
 using BepInEx;
-using Nothing.Classes;
-using Nothing.Notifications;
+using Custom.Inputs;
 using GorillaLocomotion;
 using HarmonyLib;
+using Nothing.Classes;
+using Nothing.Notifications;
 using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using TMPro;
@@ -15,8 +17,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.XR;
-using Custom.Inputs;
-
 using static Nothing.Menu.Buttons;
 using static Nothing.Settings;
 
@@ -43,6 +43,11 @@ namespace Nothing.Menu
         private static readonly Dictionary<int, Material> _materialCache = new Dictionary<int, Material>();
         private static readonly KeyCode[] _keyCodes = (KeyCode[])Enum.GetValues(typeof(KeyCode));
         public static Shader UberShader => _cachedUberShader ??= Shader.Find("GorillaTag/UberShader");
+
+        public static string shortVersion =>
+            PluginInfo.Version.Split('.').Length >= 2
+                ? $"{PluginInfo.Version.Split('.')[0]}.{PluginInfo.Version.Split('.')[1]}"
+                : PluginInfo.Version;
 
         private static void EnsureHudTexts()
         {
@@ -210,7 +215,7 @@ namespace Nothing.Menu
             try
             {
                 if (fpsText != null)
-                    fpsText.text = "FPS: " + Mathf.Ceil(1f / Time.unscaledDeltaTime).ToString();
+                    fpsText.text = $"V{shortVersion} | FPS: {Mathf.CeilToInt(1f / Time.unscaledDeltaTime)}";
 
                 string lq = (searchActive && searchQuery.Length > 0) ? searchQuery : null;
                 HashSet<string> invokedSearchButtons = lq != null ? new HashSet<string>(StringComparer.OrdinalIgnoreCase) : null;
@@ -303,10 +308,10 @@ namespace Nothing.Menu
             roundedBG.transform.localRotation = Quaternion.identity;
             roundedBG.transform.localPosition = new Vector3(0.5f, 0f, 0f);
 
-            float bgWidth = 0.19f;
+            float bgWidth = 0.22f;
             float bgHeight = 0.3f;
             float bgThick = 0.01f;
-            float bgRad = 0.015f;
+            float bgRad = 0.01f;
 
             ThemeManager.Theme bgT = ThemeManager.themes[ThemeManager.currentThemeIndex];
 
@@ -381,14 +386,13 @@ namespace Nothing.Menu
             string[] versionParts = PluginInfo.Version.Split('.');
             string shortVersion = versionParts.Length >= 2 ? $"{versionParts[0]}.{versionParts[1]}" : PluginInfo.Version;
 
-            CreateMenuText(PluginInfo.Name + " V" + shortVersion, new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
+            CreateMenuText(PluginInfo.Name, new Vector3(0.056f, 0f, 0.13f), new Vector2(10f, 4f), 2f);
+
+            string infoText = $"V{shortVersion}" + (fpsCounter ? $" | FPS: {Mathf.Ceil(1f / Time.unscaledDeltaTime)}" : "");
+            CreateMenuText(infoText, new Vector3(0.056f, 0f, 0.11f), new Vector2(8f, 2f), 1.6f);
 
             if (fpsCounter)
-            {
-                string fpsStr = "FPS: " + Mathf.Ceil(1f / Time.unscaledDeltaTime).ToString();
-                CreateMenuText(fpsStr, new Vector3(0.056f, 0f, 0.11f), new Vector2(8f, 2f), 1.8f);
                 fpsText = allTexts[allTexts.Count - 1];
-            }
 
             if (disconnectButton)
             {
@@ -397,7 +401,7 @@ namespace Nothing.Menu
                 dcBtnObj.transform.rotation = Quaternion.identity;
                 dcBtnObj.transform.localPosition = new Vector3(0.5f, 0f, 0.48f);
 
-                float dWidth = 0.19f;
+                float dWidth = 0.22f;
                 float dHeight = 0.035f;
                 float dThick = 0.005f;
                 float dRad = 0.01f;
@@ -449,7 +453,7 @@ namespace Nothing.Menu
                 GameObject searchBtnObj = new GameObject("SearchButton");
                 searchBtnObj.transform.parent = menu.transform;
                 searchBtnObj.transform.rotation = Quaternion.identity;
-                searchBtnObj.transform.localPosition = new Vector3(0.5f, -0.4f, 0.48f);
+                searchBtnObj.transform.localPosition = new Vector3(0.5f, -0.45f, 0.48f);
 
                 float pBtnWidth = 0.035f;
                 float pBtnHeight = 0.035f;
@@ -518,7 +522,7 @@ namespace Nothing.Menu
                 GameObject settingsBtnObj = new GameObject("SettingsButton");
                 settingsBtnObj.transform.parent = menu.transform;
                 settingsBtnObj.transform.rotation = Quaternion.identity;
-                settingsBtnObj.transform.localPosition = new Vector3(0.5f, -0.4f, 0.38f);
+                settingsBtnObj.transform.localPosition = new Vector3(0.5f, -0.45f, 0.38f);
 
                 float sBtnWidth = 0.035f;
                 float sBtnHeight = 0.035f;
@@ -610,12 +614,12 @@ namespace Nothing.Menu
             GameObject prevBtnObj = new GameObject("PrevButton");
             prevBtnObj.transform.parent = menu.transform;
             prevBtnObj.transform.rotation = Quaternion.identity;
-            prevBtnObj.transform.localPosition = new Vector3(0.56f, 0.2f, -0.32f);
+            prevBtnObj.transform.localPosition = new Vector3(0.56f, 0.22f, -0.315f);
 
-            float pWidth = 0.055f;
-            float pHeight = 0.04f;
+            float pWidth = 0.065f;
+            float pHeight = 0.044f;
             float pThick = 0.005f;
-            float pRad = 0.012f;
+            float pRad = 0.01f;
 
             ThemeManager.Theme prevT = ThemeManager.themes[ThemeManager.currentThemeIndex];
 
@@ -657,17 +661,17 @@ namespace Nothing.Menu
             prevBtnObj.AddComponent<Classes.Button>().relatedText = "PreviousPage";
             allButtons.Add(prevBtnObj);
 
-            CreateMenuText("<", new Vector3(0f, 0.06f, -0.123f), new Vector2(4f, 3f), 3f);
+            CreateMenuText("<", new Vector3(0f, 0.065f, -0.118f), new Vector2(4f, 3f), 3f);
 
             GameObject nextBtnObj = new GameObject("NextButton");
             nextBtnObj.transform.parent = menu.transform;
             nextBtnObj.transform.rotation = Quaternion.identity;
-            nextBtnObj.transform.localPosition = new Vector3(0.56f, -0.2f, -0.32f);
+            nextBtnObj.transform.localPosition = new Vector3(0.56f, -0.22f, -0.315f);
 
-            float nWidth = 0.055f;
-            float nHeight = 0.04f;
+            float nWidth = 0.065f;
+            float nHeight = 0.044f;
             float nThick = 0.005f;
-            float nRad = 0.012f;
+            float nRad = 0.01f;
 
             ThemeManager.Theme currentT = ThemeManager.themes[ThemeManager.currentThemeIndex];
 
@@ -709,17 +713,17 @@ namespace Nothing.Menu
             nextBtnObj.AddComponent<Classes.Button>().relatedText = "NextPage";
             allButtons.Add(nextBtnObj);
 
-            CreateMenuText(">", new Vector3(0f, -0.06f, -0.123f), new Vector2(4f, 3f), 3f);
+            CreateMenuText(">", new Vector3(0f, -0.065f, -0.118f), new Vector2(4f, 3f), 3f);
 
             GameObject homeBtn = new GameObject("HomeButton");
             homeBtn.transform.parent = menu.transform;
             homeBtn.transform.rotation = Quaternion.identity;
-            homeBtn.transform.localPosition = new Vector3(0.56f, 0f, -0.32f);
+            homeBtn.transform.localPosition = new Vector3(0.56f, 0f, -0.315f);
 
             float totalWidth = 0.06f;
-            float totalHeight = 0.04f;
+            float totalHeight = 0.044f;
             float thickness = 0.005f;
-            float radius = 0.012f;
+            float radius = 0.01f;
 
             ThemeManager.Theme t = ThemeManager.themes[ThemeManager.currentThemeIndex];
 
@@ -760,7 +764,7 @@ namespace Nothing.Menu
             homeBtn.AddComponent<Classes.Button>().relatedText = "HomeButton";
             allButtons.Add(homeBtn);
 
-            CreateMenuText("Home", new Vector3(0f, 0f, -0.122f), new Vector2(8f, 3f), 2f);
+            CreateMenuText("Home", new Vector3(0f, 0f, -0.118f), new Vector2(8f, 3f), 2f);
 
             CreateVisibleButtons(motdFont);
         }
@@ -1000,12 +1004,12 @@ namespace Nothing.Menu
             GameObject buttonContainer = new GameObject("Buttons");
             buttonContainer.transform.parent = menu.transform;
             buttonContainer.transform.rotation = Quaternion.identity;
-            buttonContainer.transform.localPosition = new Vector3(0.56f, 0f, 0.2f - offset);
+            buttonContainer.transform.localPosition = new Vector3(0.56f, 0f, 0.195f - offset * 1.25f);
 
             bool isValueChanger = IsValueChanger(method.buttonText);
 
-            float totalWidth = isValueChanger ? 0.1f : 0.175f;
-            float totalHeight = isValueChanger ? 0.035f : 0.035f;
+            float totalWidth = isValueChanger ? 0.105f : 0.2f;
+            float totalHeight = isValueChanger ? 0.045f : 0.045f;
             float thickness = 0.005f;
             float radius = 0.01f;
 
@@ -1094,8 +1098,8 @@ namespace Nothing.Menu
                     sideButton.transform.rotation = Quaternion.identity;
                     sideButton.transform.localPosition = buttonContainer.transform.localPosition + new Vector3(0f, yOffset, 0f);
 
-                    float sideWidth = 0.035f;
-                    float sideHeight = 0.035f;
+                    float sideWidth = 0.045f;
+                    float sideHeight = 0.045f;
                     float sideThickness = 0.005f;
                     float sideRadius = 0.01f;
 
@@ -1153,8 +1157,8 @@ namespace Nothing.Menu
                     sideRect.localScale = new Vector3(0.05f, 0.05f, 0.05f);
                 }
 
-                CreateValueSideButton(true, -0.23f);
-                CreateValueSideButton(false, 0.23f);
+                CreateValueSideButton(true, -0.26f);
+                CreateValueSideButton(false, 0.26f);
             }
         }
 

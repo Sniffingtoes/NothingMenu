@@ -9,7 +9,6 @@ namespace Nothing.Menu
     {
         private static readonly HashSet<string> DisabledServerChecks = new HashSet<string>
         {
-            "Anti Report",
             "No Tag On Join"
         };
 

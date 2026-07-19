@@ -26,6 +26,8 @@ namespace NothingMenu.Mods
 {
     internal class Usefull
     {
+        private static bool disconnectingForReport;
+
         public static void NoFingerMovement()
         {
             ControllerInputPoller.instance.leftControllerGripFloat = 0f;
@@ -40,35 +42,54 @@ namespace NothingMenu.Mods
 
         public static void AntiReportLogic()
         {
-            if (!PhotonNetwork.InRoom) return;
+            if (!PhotonNetwork.InRoom)
+            {
+                disconnectingForReport = false;
+                return;
+            }
+
+            if (disconnectingForReport) return;
+
             IReadOnlyList<VRRig> activeRigs = VRRigCache.ActiveRigs;
-            if (activeRigs == null) return;
+            if (activeRigs == null || NetworkSystem.Instance == null) return;
+
+            GorillaPlayerScoreboardLine localPlayerLine = null;
+            IReadOnlyList<GorillaPlayerScoreboardLine> scoreboardLines = GorillaScoreboardTotalUpdater.allScoreboardLines;
+            if (scoreboardLines == null) return;
+
+            foreach (GorillaPlayerScoreboardLine line in scoreboardLines)
+            {
+                if (line != null && line.linePlayer == NetworkSystem.Instance.LocalPlayer && line.reportButton != null)
+                {
+                    localPlayerLine = line;
+                    break;
+                }
+            }
+
+            if (localPlayerLine == null) return;
+
+            Vector3 reportButtonPosition = localPlayerLine.reportButton.transform.position + new Vector3(0f, 0.001f, 0.0004f);
+            const float reportRadius = 0.6f;
 
             foreach (VRRig vrrig in activeRigs)
             {
-                if (vrrig == GorillaTagger.Instance.offlineVRRig) continue;
+                if (vrrig == null || vrrig == GorillaTagger.Instance.offlineVRRig || vrrig.leftHandTransform == null || vrrig.rightHandTransform == null) continue;
 
                 Vector3 rHand = vrrig.rightHandTransform.position + vrrig.rightHandTransform.forward * 0.125f;
                 Vector3 lHand = vrrig.leftHandTransform.position + vrrig.leftHandTransform.forward * 0.125f;
-                float radius = 0.6f;
 
-                foreach (GorillaPlayerScoreboardLine line in GorillaScoreboardTotalUpdater.allScoreboardLines)
+                if (Vector3.Distance(reportButtonPosition, lHand) >= reportRadius && Vector3.Distance(reportButtonPosition, rHand) >= reportRadius) continue;
+
+                string playerName = vrrig.playerText1 != null ? vrrig.playerText1.text : "A player";
+                NotifiLib.SendNotification("<color=red>Anti-Report:</color> " + playerName + " Attempted to Report You");
+
+                if (AntiReportSettings.index == 0)
                 {
-                    if (line.linePlayer == NetworkSystem.Instance.LocalPlayer)
-                    {
-                        Vector3 btnPos = line.reportButton.gameObject.transform.position + new Vector3(0f, 0.001f, 0.0004f);
-
-                        if (Vector3.Distance(btnPos, lHand) < radius || Vector3.Distance(btnPos, rHand) < radius)
-                        {
-                            NotifiLib.SendNotification("<color=red>Anti-Report:</color> " + vrrig.playerText1.text + " Attempted to Report You");
-
-                            if (AntiReportSettings.index == 0)
-                            {
-                                PhotonNetwork.Disconnect();
-                            }
-                        }
-                    }
+                    disconnectingForReport = true;
+                    PhotonNetwork.Disconnect();
                 }
+
+                return;
             }
         }
 

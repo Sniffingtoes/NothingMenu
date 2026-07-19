@@ -47,9 +47,28 @@ namespace Nothing
         public static bool rightHanded;
         public static bool disableNotifications;
         public static bool pcArrayList = true;
+        public static bool pcWatermark
+        {
+            get => PlayerPrefs.GetInt("PcWatermark", 1) == 1;
+            set
+            {
+                PlayerPrefs.SetInt("PcWatermark", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
+
+        public static bool pcRoomJoiner
+        {
+            get => PlayerPrefs.GetInt("PcRoomJoiner", 1) == 1;
+            set
+            {
+                PlayerPrefs.SetInt("PcRoomJoiner", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
         public static KeyCode keyboardButton = KeyCode.Q;
         public static Vector3 menuSize = new Vector3(0.06f, 0.63f, 0.8f);
-        public static int buttonsPerPage = 5;
+        public static int buttonsPerPage = 4;
         public static float gradientSpeed = 0.5f;
     }
 }
