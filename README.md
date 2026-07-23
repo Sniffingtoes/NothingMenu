@@ -10,6 +10,6 @@ just a fun project
 - Download gorilla tag if not already
 - Install bepinex to gorilla tag game folder
 - Get the latest from [Here](https://github.com/Sniffingtoes/NothingMenu/releases/latest)
-- Drag the file into your |bepinex/plugins| folder
+- Drag the file into your `bepinex/plugins` folder
 
 **This product is not affiliated with Gorilla Tag or Another Axiom LLC and is not endorsed or otherwise sponsored by Another Axiom LLC. Portions of the materials contained herein are property of Another Axiom LLC. © 2025 Another Axiom LLC.**
