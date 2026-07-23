@@ -5,6 +5,9 @@ just a fun project
 
 <img width="562" height="778" alt="image" src="https://github.com/user-attachments/assets/af08121d-f247-41e3-bf97-b318fc12a9ac" />
 
+# ❓ how to use
+- to open the menu press `Y` on your left controller
+- use the ingame pointer to navigate the menu
 
 # 💾 installation
 - Download gorilla tag if not already
